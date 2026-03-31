@@ -22,8 +22,8 @@ const schedulesForDoctor = catchAsync(async (req: Request & { user?: IJWTPayload
     const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
     const fillters = pick(req.query, ["startDateTime", "endDateTime"])
 
-    // const user = req.user;
-    const result = await ScheduleService.schedulesForDoctor(fillters, options);
+    const user = req.user;
+    const result = await ScheduleService.schedulesForDoctor(user as IJWTPayload, fillters, options);
 
     sendResponse(res, {
         statusCode: 200,
