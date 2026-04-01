@@ -37,16 +37,16 @@ const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
 })
 
 
-// const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
-//     const { id } = req.params;
-//     const result = await DoctorService.getByIdFromDB(id);
-//     sendResponse(res, {
-//         statusCode: 200,
-//         success: true,
-//         message: 'Doctor retrieval successfully',
-//         data: result,
-//     });
-// });
+const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await DoctorService.getByIdFromDB(id as string);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Doctor retrieval successfully',
+        data: result,
+    });
+});
 
 // const deleteFromDB = catchAsync(async (req: Request, res: Response) => {
 //     const { id } = req.params;
@@ -84,7 +84,7 @@ const getAISuggestions = catchAsync(async (req: Request, res: Response) => {
 export const DoctorController = {
     getAllFromDB,
     updateIntoDB,
-    // getByIdFromDB,
+    getByIdFromDB,
     // deleteFromDB,
     // softDelete,
     getAISuggestions
