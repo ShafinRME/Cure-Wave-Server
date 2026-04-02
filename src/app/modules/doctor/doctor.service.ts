@@ -65,6 +65,11 @@ const getAllFromDB = async (filters: any, options: IOptions) => {
                 include: {
                     specialities: true
                 }
+            },
+            reviews: {
+                select: {
+                    rating: true
+                }
             }
         }
     });
@@ -156,51 +161,52 @@ const getByIdFromDB = async (id: string): Promise<Doctor | null> => {
                 include: {
                     schedule: true
                 }
-            }
+            },
+            reviews: true
         },
     });
     return result;
 };
 
-// const deleteFromDB = async (id: string): Promise<Doctor> => {
-//     return await prisma.$transaction(async (transactionClient) => {
-//         const deleteDoctor = await transactionClient.doctor.delete({
-//             where: {
-//                 id,
-//             },
-//         });
+const deleteFromDB = async (id: string): Promise<Doctor> => {
+    return await prisma.$transaction(async (transactionClient) => {
+        const deleteDoctor = await transactionClient.doctor.delete({
+            where: {
+                id,
+            },
+        });
 
-//         await transactionClient.user.delete({
-//             where: {
-//                 email: deleteDoctor.email,
-//             },
-//         });
+        await transactionClient.user.delete({
+            where: {
+                email: deleteDoctor.email,
+            },
+        });
 
-//         return deleteDoctor;
-//     });
-// };
+        return deleteDoctor;
+    });
+};
 
-// const softDelete = async (id: string): Promise<Doctor> => {
-//     return await prisma.$transaction(async (transactionClient) => {
-//         const deleteDoctor = await transactionClient.doctor.update({
-//             where: { id },
-//             data: {
-//                 isDeleted: true,
-//             },
-//         });
+const softDelete = async (id: string): Promise<Doctor> => {
+    return await prisma.$transaction(async (transactionClient) => {
+        const deleteDoctor = await transactionClient.doctor.update({
+            where: { id },
+            data: {
+                isDeleted: true,
+            },
+        });
 
-//         await transactionClient.user.update({
-//             where: {
-//                 email: deleteDoctor.email,
-//             },
-//             data: {
-//                 status: UserStatus.DELETED,
-//             },
-//         });
+        await transactionClient.user.update({
+            where: {
+                email: deleteDoctor.email,
+            },
+            data: {
+                status: UserStatus.DELETED,
+            },
+        });
 
-//         return deleteDoctor;
-//     });
-// };
+        return deleteDoctor;
+    });
+};
 
 
 
@@ -259,7 +265,7 @@ export const DoctorService = {
     getAllFromDB,
     updateIntoDB,
     getByIdFromDB,
-    // deleteFromDB,
-    // softDelete,
+    deleteFromDB,
+    softDelete,
     getAISuggestions
 }
