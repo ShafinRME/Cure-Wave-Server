@@ -27,7 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-cron.schedule('*/5 * * * *', () => {
+cron.schedule('0 * * * *', () => {
     try {
         console.log("🔄 Running unpaid appointment cleanup at", new Date().toISOString());
         AppointmentService.cancelUnpaidAppointments();
