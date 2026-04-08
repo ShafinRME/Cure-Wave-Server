@@ -1,5 +1,5 @@
 {
-  "name": "ph-health-care-starter",
+  "name": "sh-health-care-server",
   "version": "1.0.0",
   "main": "server.js",
   "author": "shafin",
@@ -8,7 +8,16 @@
     "schema": "./prisma/schema"
   },
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts"
+    "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts",
+    "build": "tsc",
+    "start": "node ./dist/server.js",
+    "db:generate": "prisma generate --schema=./prisma/schema",
+    "db:migrate": "prisma migrate --schema=./prisma/schema",
+    "db:push": "prisma db push --schema=./prisma/schema",
+    "db:pull": "prisma db pull --schema=./prisma/schema",
+    "db:studio": "prisma studio --schema=./prisma/schema",
+    "postinstall": "prisma generate --schema=./prisma/schema",
+    "stripe:webhook": "stripe listen --forward-to localhost:5000/webhook"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
@@ -17,6 +26,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.1.0",
     "@types/nodemailer": "^7.0.11",
+    "axios": "^1.14.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
@@ -24,6 +34,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.3.2",
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
