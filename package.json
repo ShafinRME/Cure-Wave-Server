@@ -17,7 +17,7 @@
     "db:pull": "prisma db pull --schema=./prisma/schema",
     "db:studio": "prisma studio --schema=./prisma/schema",
     "postinstall": "prisma generate --schema=./prisma/schema",
-    "stripe:webhook": "stripe listen --forward-to localhost:5000/webhook"
+    "stripe:webhook": "stripe listen --forward-to https://sh-care-server-test.onrender.com/webhook"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
