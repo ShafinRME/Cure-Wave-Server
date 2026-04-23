@@ -18,7 +18,7 @@ app.post(
 );
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://sh-haelth-care-frontend-test.vercel.app'],
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://curewave.vercel.app'],
     credentials: true
 }));
 
