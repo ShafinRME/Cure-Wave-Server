@@ -38,7 +38,7 @@ cron.schedule('0 * * * *', () => {
 
 app.get('/', (req: Request, res: Response) => {
     res.send({
-        Message: "Ph health care server.."
+        Message: "Cure Wave server is Running..."
     })
 });
 
