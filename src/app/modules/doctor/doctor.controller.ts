@@ -5,10 +5,11 @@ import catchAsync from '../../../shared/catchAsync';
 import { DoctorService } from '../doctor/doctor.service';
 import pick from '../../../shared/pick';
 import { doctorFilterableFields } from '../doctor/doctor.constants';
+import { UserRole } from '@prisma/client';
+import prisma from '../../../shared/prisma';
 
 const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
     const filters = pick(req.query, doctorFilterableFields);
-
     const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
 
     const result = await DoctorService.getAllFromDB(filters, options);
@@ -16,39 +17,67 @@ const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Doctors retrieval successfully',
+        message: 'Doctors retrieved successfully',
         meta: result.meta,
         data: result.data,
     });
 });
 
 const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const result = await DoctorService.getByIdFromDB(id as string);
+    const id = req.params.id as string;
+    const result = await DoctorService.getByIdFromDB(id);
+
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Doctor retrieval successfully',
+        message: 'Doctor retrieved successfully',
         data: result,
     });
 });
 
 const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const requester = (req as any).user;
 
-    const { id } = req.params;
-    const result = await DoctorService.updateIntoDB(id as string, req.body);
+    if (requester.role === UserRole.DOCTOR) {
+        const doctor = await prisma.doctor.findUnique({
+            where: { id },
+            select: { email: true, isDeleted: true },
+        });
+
+        if (!doctor || doctor.isDeleted) {
+            return sendResponse(res, {
+                statusCode: httpStatus.NOT_FOUND,
+                success: false,
+                message: 'Doctor not found',
+                data: null,
+            });
+        }
+
+        if (doctor.email !== requester.email) {
+            return sendResponse(res, {
+                statusCode: httpStatus.FORBIDDEN,
+                success: false,
+                message: 'You are not authorized to update this profile',
+                data: null,
+            });
+        }
+    }
+
+    const result = await DoctorService.updateIntoDB(id, req.body);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: "Doctor data updated!",
-        data: result
-    })
+        message: 'Doctor data updated successfully',
+        data: result,
+    });
 });
 
 const deleteFromDB = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const result = await DoctorService.deleteFromDB(id as string);
+    const id = req.params.id as string;
+    const result = await DoctorService.deleteFromDB(id);
+
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -57,10 +86,10 @@ const deleteFromDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-
 const softDelete = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const result = await DoctorService.softDelete(id as string);
+    const id = req.params.id as string;
+    const result = await DoctorService.softDelete(id);
+
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -72,11 +101,12 @@ const softDelete = catchAsync(async (req: Request, res: Response) => {
 const getAiSuggestion = catchAsync(async (req: Request, res: Response) => {
     const { symptoms } = req.body;
 
-    // Basic validation
     if (!symptoms || typeof symptoms !== 'string' || symptoms.trim().length < 5) {
-        return res.status(httpStatus.BAD_REQUEST).json({
+        return sendResponse(res, {
+            statusCode: httpStatus.BAD_REQUEST,
             success: false,
-            message: 'Please provide valid symptoms for doctor suggestion (minimum 5 characters).',
+            message: 'Please provide valid symptoms (minimum 5 characters).',
+            data: null,
         });
     }
 
@@ -90,12 +120,11 @@ const getAiSuggestion = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-
 export const DoctorController = {
-    updateIntoDB,
     getAllFromDB,
     getByIdFromDB,
+    updateIntoDB,
     deleteFromDB,
     softDelete,
     getAiSuggestion,
-}
+};

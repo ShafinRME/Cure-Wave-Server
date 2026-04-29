@@ -4,11 +4,12 @@ import auth from '../../middlewares/auth';
 import { UserRole } from '@prisma/client';
 import validateRequest from '../../middlewares/validateRequest';
 import { DoctorValidation } from '../doctor/doctor.validation';
+import { aiLimiter } from '../../middlewares/rateLimiter';
 
 const router = express.Router();
 
 // AI driven doctor suggestion
-router.post('/suggestion', DoctorController.getAiSuggestion);
+router.post('/suggestion', aiLimiter, DoctorController.getAiSuggestion);
 
 // task 3
 router.get('/', DoctorController.getAllFromDB);

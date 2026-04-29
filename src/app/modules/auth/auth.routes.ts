@@ -6,6 +6,37 @@ import { AuthController } from '../auth/auth.controller';
 
 const router = express.Router();
 
+// ─── Middleware ────────────────────────────────────────────────────────────────
+
+/**
+ * flexAuth middleware
+ *
+ * Handles two reset-password scenarios:
+ *  1. Newly created Doctor/Admin logging in for the first time
+ *     → No Authorization header, but has accessToken cookie (cookie-based auth)
+ *  2. Existing user resetting password via email link
+ *     → Has Authorization header with reset token (token-based, no auth needed)
+ */
+const flexAuth = (req: Request, res: Response, next: NextFunction) => {
+    const hasCookieToken = !!req.cookies?.accessToken;
+    const hasAuthHeader = !!req.headers?.authorization;
+
+    if (!hasAuthHeader && hasCookieToken) {
+        // First-login flow: validate via cookie-based access token
+        return auth(
+            UserRole.SUPER_ADMIN,
+            UserRole.ADMIN,
+            UserRole.DOCTOR,
+            UserRole.PATIENT
+        )(req, res, next);
+    }
+
+    // Email link flow: token is embedded in request body, no session auth needed
+    next();
+};
+
+// ─── Routes ───────────────────────────────────────────────────────────────────
+
 router.post(
     '/login',
     authLimiter,
@@ -15,7 +46,7 @@ router.post(
 router.post(
     '/refresh-token',
     AuthController.refreshToken
-)
+);
 
 router.post(
     '/change-password',
@@ -30,34 +61,25 @@ router.post(
 
 router.post(
     '/forgot-password',
+    authLimiter,
     AuthController.forgotPassword
 );
 
 router.post(
     '/reset-password',
-    (req: Request, res: Response, next: NextFunction) => {
-
-        //user is resetting password without token and logged in newly created admin or doctor
-        if (!req.headers.authorization && req.cookies.accessToken) {
-            console.log(req.headers.authorization, "from reset password route guard");
-            console.log(req.cookies.accessToken, "from reset password route guard");
-            auth(
-                UserRole.SUPER_ADMIN,
-                UserRole.ADMIN,
-                UserRole.DOCTOR,
-                UserRole.PATIENT
-            )(req, res, next);
-        } else {
-            //user is resetting password via email link with token
-            next();
-        }
-    },
+    flexAuth,
     AuthController.resetPassword
-)
+);
 
 router.get(
     '/me',
+    auth(
+        UserRole.SUPER_ADMIN,
+        UserRole.ADMIN,
+        UserRole.DOCTOR,
+        UserRole.PATIENT
+    ),
     AuthController.getMe
-)
+);
 
 export const AuthRoutes = router;
