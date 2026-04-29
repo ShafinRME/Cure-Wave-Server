@@ -13,11 +13,20 @@ export const authLimiter = rateLimit({
     max: 10, // Limit login attempts
     message: "Too many login attempts, please try again later.",
     skipSuccessfulRequests: true,
+    standardHeaders: true,
+    legacyHeaders: false,
 });
+
 export const paymentLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 15,
     message: "Too many payment attempts, please try again later.",
     standardHeaders: true,
     legacyHeaders: false,
+});
+
+export const aiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 5,              // 5 requests per IP per minute
+    message: 'Too many AI requests, please try again later.'
 });
